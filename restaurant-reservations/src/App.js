@@ -4,15 +4,13 @@ import './App.css'; // Importa el archivo CSS
 
 function App() {
     const [formData, setFormData] = useState({
-        name: '',
+        username: '',
         email: '',
-        phone: '',
-        date: '',
-        time: '',
-        guests: 1
+        password: '',
+        confirmPassword: ''
     });
     const [showConfirmation, setShowConfirmation] = useState(false);
-    const [successMessage, setSuccessMessage] = useState('');
+    const [errorMessage, setErrorMessage] = useState('');
 
     const handleChange = (e) => {
         setFormData({
@@ -21,41 +19,35 @@ function App() {
         });
     };
 
-    const handleSubmit = (e) => {
-        e.preventDefault();
-        setShowConfirmation(true);
-        setSuccessMessage('');  // Asegúrate de limpiar el mensaje de éxito cuando se envíe el formulario
-    };
+    const handleRegister = () => {
+        const { username, email, password, confirmPassword } = formData;
+        
+        if (password !== confirmPassword) {
+            setErrorMessage('Passwords do not match');
+            return;
+        }
 
-    const handleConfirm = () => {
-        axios.post('http://localhost:3000/reservations', formData)
+        axios.post('http://localhost:3000/register', { username, email, password })
             .then(response => {
-                setSuccessMessage(`Reservation made with ID: ${response.data.id}`);
-                // Resetea el formulario y oculta la confirmación después de la confirmación exitosa
-                setFormData({
-                    name: '',
-                    email: '',
-                    phone: '',
-                    date: '',
-                    time: '',
-                    guests: 1
-                });
-                setShowConfirmation(false);
+                setShowConfirmation(true);
+                setErrorMessage('');
+                console.log(response.data);
             })
             .catch(error => {
-                console.error('There was an error making the reservation!', error);
+                setErrorMessage('Error registering user');
+                console.error('Error registering user:', error);
             });
     };
 
     return (
         <div className="App">
-            <h1>Restaurant Reservation</h1>
-            <form onSubmit={handleSubmit}>
+            <h1>User Registration</h1>
+            <form>
                 <input
                     type="text"
-                    name="name"
-                    placeholder="Name"
-                    value={formData.name}
+                    name="username"
+                    placeholder="Username"
+                    value={formData.username}
                     onChange={handleChange}
                     required
                 />
@@ -68,54 +60,34 @@ function App() {
                     required
                 />
                 <input
-                    type="text"
-                    name="phone"
-                    placeholder="Phone"
-                    value={formData.phone}
-                    onChange={handleChange}
-                />
-                <input
-                    type="date"
-                    name="date"
-                    value={formData.date}
+                    type="password"
+                    name="password"
+                    placeholder="Password"
+                    value={formData.password}
                     onChange={handleChange}
                     required
                 />
                 <input
-                    type="time"
-                    name="time"
-                    value={formData.time}
+                    type="password"
+                    name="confirmPassword"
+                    placeholder="Confirm Password"
+                    value={formData.confirmPassword}
                     onChange={handleChange}
                     required
                 />
-                <input
-                    type="number"
-                    name="guests"
-                    value={formData.guests}
-                    onChange={handleChange}
-                    min="1"
-                    required
-                />
-                <button type="submit">Reserve</button>
+                <button type="button" onClick={handleRegister}>Register</button>
             </form>
 
             {showConfirmation && (
                 <div className="confirmation">
-                    <h2>Confirm your reservation</h2>
-                    <p><strong>Name:</strong> {formData.name}</p>
-                    <p><strong>Email:</strong> {formData.email}</p>
-                    <p><strong>Phone:</strong> {formData.phone}</p>
-                    <p><strong>Date:</strong> {formData.date}</p>
-                    <p><strong>Time:</strong> {formData.time}</p>
-                    <p><strong>Guests:</strong> {formData.guests}</p>
-                    <button onClick={handleConfirm}>Confirm Reservation</button>
-                    <button onClick={() => setShowConfirmation(false)}>Edit</button>
+                    <h2>Registration Successful</h2>
+                    <p>Your account has been successfully registered.</p>
                 </div>
             )}
 
-            {successMessage && (
-                <div className="success-message">
-                    <p>{successMessage}</p>
+            {errorMessage && (
+                <div className="error-message">
+                    <p>{errorMessage}</p>
                 </div>
             )}
         </div>
